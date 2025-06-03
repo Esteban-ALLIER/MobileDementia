@@ -35,7 +35,7 @@ export default function Register() {
         userId: user.uid
       });
       Alert.alert("Succès", "Inscription réussie !");
-      router.replace("/(app)");
+      router.replace("/(app)/index");
     } catch (error: any) {
       Alert.alert("Erreur", error.message);
     }

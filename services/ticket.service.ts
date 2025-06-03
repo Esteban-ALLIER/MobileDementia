@@ -1,5 +1,5 @@
 import { db } from "@/config/firebase";
-import { TicketFirst, TicketTrue } from "@/types/Ticket";
+import { TicketFirst, TicketTrue } from "@/types/ticket";
 import { dateOnly } from "@/utils/dateFormatter";
 import { collection, getDocs, addDoc, updateDoc, doc, getDoc, deleteDoc, Timestamp, onSnapshot, DocumentReference } from "firebase/firestore";
 
@@ -106,40 +106,12 @@ const updateTicket = async (
     updatedAt: Timestamp.fromDate(dateOnly),
   };
 
-  if (updatedData.assignedTo) {
-    updatePayload.assignedTo =
-      typeof updatedData.assignedTo === "string"
-        ? doc(db, "Users", updatedData.assignedTo)
-        : updatedData.assignedTo;
-  }
-
   if (updatedData.dueDate) {
     updatePayload.dueDate = updatedData.dueDate;
   }
 
   await updateDoc(ticketRef, updatePayload);
 };
-
-const assignSupportToTicket = async (ticketId: string, supportUserId: string) => {
-  try {
-    const ticketRef = doc(db, "Tickets", ticketId);
-    const supportRef = doc(db, "Users", supportUserId);
-
-    await updateDoc(ticketRef, {
-      assignedTo: supportRef,
-      status: "assigné",
-    });
-
-    const ticketSnap = await getDoc(ticketRef);
-    if (ticketSnap.exists()) {
-      const ticketData = ticketSnap.data();
-      const title = ticketData.title || ticketId;
-    }
-  } catch (error) {
-    console.error("Erreur lors de l’assignation du ticket :", error);
-  }
-};
-
 
 const closedTicket = async (
   idTicket: string,
@@ -165,4 +137,4 @@ const closedTicket = async (
 
 
 
-export { getAllTickets, createTicket, getDetailTicket, deleteTicket, updateTicket, assignSupportToTicket, closedTicket };
+export { getAllTickets, createTicket, getDetailTicket, deleteTicket, updateTicket, closedTicket };

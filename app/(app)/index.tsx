@@ -7,7 +7,7 @@ import { TextInput, IconButton, Button as Bt } from "react-native-paper";
 import { useEffect, useState } from 'react';
 import { getAllTickets } from '@/services/ticket.service';
 import { doc, getDoc } from "firebase/firestore";
-import { db } from "@/firebase"; // adapte ce chemin si besoin
+import { db } from "@/config/firebase"; // adapte ce chemin si besoin
 
 export default function Index() {
   const { user, role, loading } = useAuth();
@@ -74,7 +74,7 @@ export default function Index() {
   }
 
   const goToTicketsIndex = () => {
-    router.replace("/tickets");
+    router.replace("/tickets/index");
   }
 
   return (
@@ -94,10 +94,8 @@ export default function Index() {
           {role === "admin" && (
             <Text style={styles.label}>Vous avez {ticketCount} ticket(s) en cours</Text>
           )}
-          {role === "support" && (
-            <Text style={styles.label}>Vous avez {ticketCount} ticket(s) qui vous est assigné</Text>
-          )}
-          {role === "employee" && (
+
+          {role === "Membre" && (
             <Text style={styles.label}>Vous avez {ticketCount} ticket(s)</Text>
           )}
         </>

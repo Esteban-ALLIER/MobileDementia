@@ -36,7 +36,7 @@ const LoginScreen = () => {
         lastLogin: Timestamp.now(),
       });
       Alert.alert("Succès", "Connexion réussie !");
-      router.replace("/(app)")
+      router.replace("/(app)/index")
       // Redirection ou mise à jour de l'état après connexion
     } catch (error) {
       Alert.alert("Erreur", (error as Error).message);

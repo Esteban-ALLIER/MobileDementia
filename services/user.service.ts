@@ -66,6 +66,6 @@ const updateUser = async (userId: string): Promise<void> => {
 
   const userRef = doc(db, "Users", userId);
 
-  await updateDoc(userRef, { role: "support" });
+  await updateDoc(userRef, { role: "Reviewer" });
 }
 export { getUserData, listenToSupportUsers, updateUser, getAllUsers };
