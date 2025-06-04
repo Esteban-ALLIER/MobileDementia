@@ -13,7 +13,8 @@ import {
     Text,
     TouchableOpacity,
     Modal,
-    Alert
+    Alert,
+    ScrollView
 } from "react-native";
 import { getUserData, updateUser } from "@/services/user.service";
 import Ionicons from "@expo/vector-icons/build/Ionicons";
@@ -33,9 +34,6 @@ const UserProfile = () => {
     const { user, loading, role } = useAuth();
 
     if (!user) return <Redirect href="/login" />;
-
-   
-
 
     const getUsers = async () => {
         try {
@@ -103,17 +101,65 @@ const UserProfile = () => {
         }
     };
 
-    return (
-        <>
-            <Text style={{ fontSize: 24, fontWeight: "bold", textAlign: "center", marginVertical: 20 }}>Liste des Utilisateurs</Text>
-            <Text style={{ fontSize: 16, textAlign: "center", marginBottom: 20 }}>cliquer sur un Membre pour le passer en Reviewer</Text>
-            <UserList
-                user={users}
-                onUserRefresh={getUsers}
-                onUserPress={handleUserPress}
-            />
+    const getRoleColor = (userRole: string) => {
+        switch (userRole) {
+            case 'Admin': return '#ffebee';
+            case 'Reviewer': return '#f3e5f5';
+            case 'Membre': return '#e3f2fd';
+            default: return '#f8f9fa';
+        }
+    };
 
-            <View style={{ flexDirection: "row", justifyContent: "space-evenly", marginVertical: 10 }}>
+    const getRoleTextColor = (userRole: string) => {
+        switch (userRole) {
+            case 'Admin': return '#d32f2f';
+            case 'Reviewer': return '#7b1fa2';
+            case 'Membre': return '#1976d2';
+            default: return '#666';
+        }
+    };
+
+    const membersCount = users.filter(u => u.role === 'Membre').length;
+    const reviewersCount = users.filter(u => u.role === 'Reviewer').length;
+    const adminsCount = users.filter(u => u.role === 'Admin').length;
+
+    return (
+        <ScrollView style={styles.container}>
+            {/* Header Card */}
+            <View style={styles.headerCard}>
+                <Text style={styles.title}>Gestion des Rôles</Text>
+                <Text style={styles.subtitle}>Cliquez sur un Membre pour le promouvoir Reviewer</Text>
+                
+                {/* Stats Row */}
+                <View style={styles.statsRow}>
+                    <View style={styles.statItem}>
+                        <Text style={styles.statNumber}>{membersCount}</Text>
+                        <Text style={styles.statLabel}>Membres</Text>
+                    </View>
+                    <View style={styles.statItem}>
+                        <Text style={styles.statNumber}>{reviewersCount}</Text>
+                        <Text style={styles.statLabel}>Reviewers</Text>
+                    </View>
+                    <View style={styles.statItem}>
+                        <Text style={styles.statNumber}>{adminsCount}</Text>
+                        <Text style={styles.statLabel}>Admins</Text>
+                    </View>
+                </View>
+            </View>
+
+            {/* Users List */}
+            <View style={styles.listCard}>
+                <View style={styles.listHeader}>
+                    <Ionicons name="people-outline" size={20} color="#2196F3" />
+                    <Text style={styles.listTitle}>Liste des Utilisateurs</Text>
+                    <Text style={styles.listCount}>({users.length})</Text>
+                </View>
+                
+                <UserList
+                    user={users}
+                    onUserRefresh={getUsers}
+                    onUserPress={handleUserPress}
+                />
             </View>
 
             {/* Modal de confirmation */}
@@ -127,50 +173,135 @@ const UserProfile = () => {
             >
                 <View style={styles.centeredView}>
                     <View style={styles.modalView}>
-                        <Text style={styles.modalTitle}>Confirmation</Text>
+                        <View style={styles.modalHeader}>
+                            <Ionicons name="arrow-up-circle-outline" size={32} color="#2196F3" />
+                            <Text style={styles.modalTitle}>Promotion</Text>
+                        </View>
+
                         <Text style={styles.modalText}>
-                            Êtes-vous sûr de vouloir passer ce Membre en Reviewer ?
+                            Êtes-vous sûr de vouloir promouvoir ce membre au rôle de Reviewer ?
                         </Text>
-                        <Text style={styles.userInfo}>
-                            {selectedUser?.PseudoInGame} ({selectedUser?.email})
-                        </Text>
+
+                        {selectedUser && (
+                            <View style={styles.userCard}>
+                                <View style={styles.userInfo}>
+                                    <Text style={styles.userName}>{selectedUser.PseudoInGame}</Text>
+                                    <Text style={styles.userEmail}>{selectedUser.email}</Text>
+                                </View>
+                                <View style={styles.roleChangeIndicator}>
+                                    <View style={[styles.roleChip, { backgroundColor: getRoleColor(selectedUser.role) }]}>
+                                        <Text style={[styles.roleText, { color: getRoleTextColor(selectedUser.role) }]}>
+                                            {selectedUser.role}
+                                        </Text>
+                                    </View>
+                                    <Ionicons name="arrow-forward" size={16} color="#666" />
+                                    <View style={[styles.roleChip, { backgroundColor: getRoleColor('Reviewer') }]}>
+                                        <Text style={[styles.roleText, { color: getRoleTextColor('Reviewer') }]}>
+                                            Reviewer
+                                        </Text>
+                                    </View>
+                                </View>
+                            </View>
+                        )}
 
                         <View style={styles.buttonContainer}>
                             <TouchableOpacity
                                 style={[styles.button, styles.buttonCancel]}
                                 onPress={() => setModalVisible(false)}
                             >
-                                <Text style={styles.textStyle}>Annuler</Text>
+                                <Text style={styles.buttonCancelText}>Annuler</Text>
                             </TouchableOpacity>
                             <TouchableOpacity
                                 style={[styles.button, styles.buttonConfirm]}
                                 onPress={confirmRoleChange}
                             >
-                                <Text style={styles.textStyle}>Confirmer</Text>
+                                <Ionicons name="checkmark" size={18} color="white" />
+                                <Text style={styles.buttonConfirmText}>Promouvoir</Text>
                             </TouchableOpacity>
                         </View>
                     </View>
                 </View>
             </Modal>
-        </>
+        </ScrollView>
     );
 };
 
 const styles = StyleSheet.create({
-    filterBtn: {
-        flexDirection: "row",
-        justifyContent: "space-between",
-        marginVertical: 10,
-        marginHorizontal: 10
+    container: {
+        flex: 1,
+        backgroundColor: '#f5f5f5',
+        padding: 15,
     },
-    searchBar: {
-        height: 40,
-        borderColor: "#ccc",
-        borderWidth: 1,
-        borderRadius: 5,
-        paddingHorizontal: 10,
-        marginVertical: 10,
-        marginHorizontal: 10,
+    headerCard: {
+        backgroundColor: 'white',
+        borderRadius: 12,
+        padding: 20,
+        marginBottom: 15,
+        shadowColor: "#000",
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.1,
+        shadowRadius: 3,
+        elevation: 3,
+    },
+    title: {
+        fontSize: 22,
+        fontWeight: 'bold',
+        textAlign: 'center',
+        marginBottom: 8,
+        color: '#333',
+    },
+    subtitle: {
+        fontSize: 14,
+        textAlign: 'center',
+        marginBottom: 20,
+        color: '#666',
+    },
+    statsRow: {
+        flexDirection: 'row',
+        justifyContent: 'space-around',
+        paddingTop: 15,
+        borderTopWidth: 1,
+        borderTopColor: '#f0f0f0',
+    },
+    statItem: {
+        alignItems: 'center',
+    },
+    statNumber: {
+        fontSize: 24,
+        fontWeight: 'bold',
+        color: '#2196F3',
+        marginBottom: 4,
+    },
+    statLabel: {
+        fontSize: 13,
+        color: '#666',
+    },
+    listCard: {
+        backgroundColor: 'white',
+        borderRadius: 12,
+        padding: 15,
+        shadowColor: "#000",
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.1,
+        shadowRadius: 3,
+        elevation: 3,
+    },
+    listHeader: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        marginBottom: 15,
+        gap: 8,
+    },
+    listTitle: {
+        fontSize: 16,
+        fontWeight: '600',
+        color: '#333',
+        flex: 1,
+    },
+    listCount: {
+        fontSize: 14,
+        color: '#666',
+        fontWeight: '500',
     },
     centeredView: {
         flex: 1,
@@ -181,56 +312,101 @@ const styles = StyleSheet.create({
     modalView: {
         margin: 20,
         backgroundColor: "white",
-        borderRadius: 10,
+        borderRadius: 15,
         padding: 25,
-        alignItems: "center",
         shadowColor: "#000",
-        shadowOffset: {
-            width: 0,
-            height: 2
-        },
+        shadowOffset: { width: 0, height: 2 },
         shadowOpacity: 0.25,
         shadowRadius: 4,
         elevation: 5,
-        width: "80%"
+        width: "90%",
+        maxWidth: 400,
+    },
+    modalHeader: {
+        alignItems: 'center',
+        marginBottom: 20,
     },
     modalTitle: {
         fontSize: 18,
         fontWeight: "bold",
-        marginBottom: 15
+        marginTop: 8,
+        color: '#333',
     },
     modalText: {
-        marginBottom: 15,
-        textAlign: "center"
+        fontSize: 15,
+        marginBottom: 20,
+        textAlign: "center",
+        color: '#555',
+        lineHeight: 22,
+    },
+    userCard: {
+        backgroundColor: '#f8f9fa',
+        borderRadius: 10,
+        padding: 15,
+        marginBottom: 20,
+        borderWidth: 1,
+        borderColor: '#e0e0e0',
     },
     userInfo: {
-        fontWeight: "500",
-        marginBottom: 20,
-        textAlign: "center"
+        marginBottom: 12,
+    },
+    userName: {
+        fontSize: 16,
+        fontWeight: '600',
+        color: '#333',
+        marginBottom: 4,
+    },
+    userEmail: {
+        fontSize: 14,
+        color: '#666',
+    },
+    roleChangeIndicator: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center',
+        gap: 10,
+    },
+    roleChip: {
+        paddingHorizontal: 12,
+        paddingVertical: 6,
+        borderRadius: 15,
+    },
+    roleText: {
+        fontSize: 13,
+        fontWeight: '600',
     },
     buttonContainer: {
         flexDirection: "row",
         justifyContent: "space-between",
-        width: "100%",
-        marginTop: 10
+        gap: 12,
     },
     button: {
-        borderRadius: 5,
-        padding: 10,
-        elevation: 2,
-        minWidth: "45%"
+        flex: 1,
+        borderRadius: 8,
+        padding: 12,
+        alignItems: 'center',
+        justifyContent: 'center',
+        flexDirection: 'row',
+        gap: 6,
     },
     buttonCancel: {
-        backgroundColor: "#ccc",
+        backgroundColor: "transparent",
+        borderWidth: 1.5,
+        borderColor: '#e0e0e0',
     },
     buttonConfirm: {
         backgroundColor: "#2196F3",
     },
-    textStyle: {
+    buttonCancelText: {
+        color: '#666',
+        fontWeight: "600",
+        fontSize: 15,
+    },
+    buttonConfirmText: {
         color: "white",
-        fontWeight: "bold",
-        textAlign: "center"
-    }
+        fontWeight: "600",
+        fontSize: 15,
+    },
 });
 
 export default UserProfile;

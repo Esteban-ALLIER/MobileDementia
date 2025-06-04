@@ -1,19 +1,19 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
 import { useAuth } from '@/context/ctx';
-import { TextInput, IconButton, Button as Bt } from "react-native-paper";
 import { getUserData } from '@/services/user.service';
 import { useRouter } from 'expo-router';
+import Ionicons from "@expo/vector-icons/build/Ionicons";
 
 export default function Profile() {
-      const router = useRouter();
+    const router = useRouter();
     const { user, role } = useAuth();
     const [userData, setUserData] = useState({
         email: "",
         PseudoInGame: "",
         role: "",
-        Core: "",
-        Regear: ""
+        Core: false,
+        Regear: false
     });
 
     useEffect(() => {
@@ -31,240 +31,254 @@ export default function Profile() {
         fetchUserData();
     }, [user]);
 
-    const renderStatusIcon = (value: string) => {
-        if (value === 'Non' || value === 'Non') {
-            return (
-                <View style={styles.iconContainer}>
-                    <Text style={styles.crossIcon}>✗</Text>
-                </View>
-            );
-        } else if (value === 'Oui' || value === 'oui') {
-            return (
-                <View style={styles.iconContainer}>
-                    <Text style={styles.checkIcon}>✓</Text>
-                </View>
-            );
-        } else {
-            return <Text style={styles.statusText}>{value}</Text>;
+    const getRoleColor = (userRole: string) => {
+        switch (userRole) {
+            case 'Admin': return '#ffebee';
+            case 'Reviewer': return '#f3e5f5';
+            case 'Membre': return '#e3f2fd';
+            default: return '#f8f9fa';
         }
     };
+
+    const getRoleTextColor = (userRole: string) => {
+        switch (userRole) {
+            case 'Admin': return '#d32f2f';
+            case 'Reviewer': return '#7b1fa2';
+            case 'Membre': return '#1976d2';
+            default: return '#666';
+        }
+    };
+
+    const renderStatusIcon = (value: boolean) => {
+        return (
+            <View style={[styles.statusChip, value ? styles.statusYes : styles.statusNo]}>
+                <Ionicons 
+                    name={value ? "checkmark" : "close"} 
+                    size={16} 
+                    color={value ? "#155724" : "#721c24"} 
+                />
+                <Text style={[styles.statusText, { color: value ? "#155724" : "#721c24" }]}>
+                    {value ? "Oui" : "Non"}
+                </Text>
+            </View>
+        );
+    };
+
     const GoToStatInGame = () => {
         router.push("/profile/StatInGame");
     }
 
     return (
-        <View style={styles.container}>
-            <View style={styles.header}>
+        <ScrollView style={styles.container}>
+            {/* Header Card */}
+            <View style={styles.headerCard}>
                 <Text style={styles.title}>Mon Profil</Text>
-                <View style={styles.titleUnderline} />
+                <Text style={styles.subtitle}>Informations de votre compte</Text>
             </View>
 
-            <View style={styles.cardContainer}>
-                <View style={styles.card}>
-                    <View style={styles.cardHeader}>
-                        <Text style={styles.cardTitle}>Informations personnelles</Text>
-                    </View>
+            {/* Personal Info Card */}
+            <View style={styles.card}>
+                <View style={styles.cardHeader}>
+                    <Ionicons name="person-outline" size={20} color="#2196F3" />
+                    <Text style={styles.cardTitle}>Informations personnelles</Text>
+                </View>
 
+                <View style={styles.infoContainer}>
                     <View style={styles.infoRow}>
                         <Text style={styles.label}>Email</Text>
                         <Text style={styles.value}>{userData.email}</Text>
                     </View>
-
-                    <View style={styles.divider} />
 
                     <View style={styles.infoRow}>
                         <Text style={styles.label}>Pseudo</Text>
                         <Text style={styles.value}>{userData.PseudoInGame}</Text>
                     </View>
 
-                    <View style={styles.divider} />
-
                     <View style={styles.infoRow}>
                         <Text style={styles.label}>Rôle</Text>
-                        <Text style={styles.value}>{userData.role}</Text>
-                    </View>
-                </View>
-
-                <View style={styles.statusCard}>
-                    <View style={styles.cardHeader}>
-                        <Text style={styles.cardTitle}>Statut</Text>
-                    </View>
-
-                    <View style={styles.statusGrid}>
-                        <View style={styles.statusItem}>
-                            <Text style={styles.statusLabel}>Core</Text>
-                            {renderStatusIcon(userData.Core)}
-                        </View>
-
-                        <View style={styles.statusSeparator} />
-
-                        <View style={styles.statusItem}>
-                            <Text style={styles.statusLabel}>Regear</Text>
-                            {renderStatusIcon(userData.Regear)}
+                        <View style={[styles.roleChip, { backgroundColor: getRoleColor(userData.role) }]}>
+                            <Text style={[styles.roleText, { color: getRoleTextColor(userData.role) }]}>
+                                {userData.role}
+                            </Text>
                         </View>
                     </View>
                 </View>
             </View>
-            <View style={styles.cardContainer}>
-                <Bt
-                    mode="contained"
-                    onPress={GoToStatInGame}
+
+            {/* Status Card */}
+            <View style={styles.card}>
+                <View style={styles.cardHeader}>
+                    <Ionicons name="shield-checkmark-outline" size={20} color="#2196F3" />
+                    <Text style={styles.cardTitle}>Statut</Text>
+                </View>
+
+                <View style={styles.statusGrid}>
+                    <View style={styles.statusItem}>
+                        <Text style={styles.statusLabel}>Core</Text>
+                        {renderStatusIcon(userData.Core)}
+                    </View>
+
+                    <View style={styles.statusDivider} />
+
+                    <View style={styles.statusItem}>
+                        <Text style={styles.statusLabel}>Regear</Text>
+                        {renderStatusIcon(userData.Regear)}
+                    </View>
+                </View>
+            </View>
+
+            {/* Actions Card */}
+            <View style={styles.card}>
+                <View style={styles.cardHeader}>
+                    <Ionicons name="settings-outline" size={20} color="#2196F3" />
+                    <Text style={styles.cardTitle}>Actions</Text>
+                </View>
+
+                <TouchableOpacity
                     style={styles.actionButton}
-                    icon="ticket"
+                    onPress={GoToStatInGame}
                 >
-                    Gérer les utilisateurs
-                </Bt>
+                    <Ionicons name="stats-chart-outline" size={18} color="white" />
+                    <Text style={styles.actionButtonText}>Statistiques In-Game</Text>
+                </TouchableOpacity>
             </View>
-        </View>
+        </ScrollView>
     );
 }
 
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: "#f8fafc",
-        paddingHorizontal: 20,
-        paddingTop: 40
+        backgroundColor: '#f5f5f5',
+        padding: 15,
     },
-    header: {
+    headerCard: {
+        backgroundColor: 'white',
+        borderRadius: 12,
+        padding: 20,
+        marginBottom: 15,
         alignItems: 'center',
-        marginBottom: 30
+        shadowColor: "#000",
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.1,
+        shadowRadius: 3,
+        elevation: 3,
     },
     title: {
-        fontSize: 28,
-        fontWeight: "700",
-        color: "#1e293b",
-        letterSpacing: -0.5
+        fontSize: 22,
+        fontWeight: 'bold',
+        color: '#333',
+        marginBottom: 6,
     },
-    titleUnderline: {
-        width: 60,
-        height: 3,
-        backgroundColor: "#3b82f6",
-        borderRadius: 2,
-        marginTop: 8
-    },
-    cardContainer: {
-        gap: 20
+    subtitle: {
+        fontSize: 14,
+        color: '#666',
     },
     card: {
-        backgroundColor: "#ffffff",
-        borderRadius: 16,
-        padding: 24,
+        backgroundColor: 'white',
+        borderRadius: 12,
+        padding: 20,
+        marginBottom: 15,
         shadowColor: "#000",
-        shadowOffset: {
-            width: 0,
-            height: 2,
-        },
+        shadowOffset: { width: 0, height: 2 },
         shadowOpacity: 0.1,
-        shadowRadius: 8,
-        elevation: 4,
-        borderWidth: 1,
-        borderColor: "#f1f5f9"
+        shadowRadius: 3,
+        elevation: 3,
     },
-    statusCard: {
-        backgroundColor: "#ffffff",
-        borderRadius: 16,
-        padding: 24,
-        shadowColor: "#000",
-        shadowOffset: {
-            width: 0,
-            height: 2,
-        },
-        shadowOpacity: 0.1,
-        shadowRadius: 8,
-        elevation: 4,
-        borderWidth: 1,
-        borderColor: "#f1f5f9"
-    },
-    actionButton: {
-    marginBottom: 12,
-    width: '80%',
-  },
     cardHeader: {
-        marginBottom: 20
+        flexDirection: 'row',
+        alignItems: 'center',
+        marginBottom: 15,
+        gap: 8,
     },
     cardTitle: {
-        fontSize: 18,
-        fontWeight: "600",
-        color: "#374151",
-        letterSpacing: -0.2
+        fontSize: 16,
+        fontWeight: '600',
+        color: '#333',
+    },
+    infoContainer: {
+        gap: 12,
     },
     infoRow: {
         flexDirection: 'row',
         justifyContent: 'space-between',
         alignItems: 'center',
-        paddingVertical: 12
+        paddingVertical: 8,
     },
     label: {
-        fontSize: 15,
-        color: "#6b7280",
-        fontWeight: "500",
-        letterSpacing: 0.1
+        fontSize: 14,
+        color: '#666',
+        fontWeight: '500',
     },
     value: {
-        fontSize: 15,
-        color: "#1f2937",
-        fontWeight: "600",
-        textAlign: 'right',
+        fontSize: 14,
+        color: '#333',
+        fontWeight: '600',
         flex: 1,
-        marginLeft: 20
+        textAlign: 'right',
     },
-    divider: {
-        height: 1,
-        backgroundColor: "#e5e7eb",
-        marginVertical: 4
+    roleChip: {
+        paddingHorizontal: 10,
+        paddingVertical: 4,
+        borderRadius: 12,
+    },
+    roleText: {
+        fontSize: 13,
+        fontWeight: '600',
     },
     statusGrid: {
         flexDirection: 'row',
-        alignItems: 'center'
+        alignItems: 'center',
     },
     statusItem: {
         flex: 1,
         alignItems: 'center',
-        paddingVertical: 16
+        paddingVertical: 12,
     },
-    statusSeparator: {
+    statusDivider: {
         width: 1,
         height: 40,
-        backgroundColor: "#e5e7eb",
-        marginHorizontal: 20
+        backgroundColor: '#e0e0e0',
+        marginHorizontal: 15,
     },
     statusLabel: {
-        fontSize: 14,
-        color: "#6b7280",
-        fontWeight: "600",
-        marginBottom: 12,
+        fontSize: 13,
+        color: '#666',
+        fontWeight: '600',
+        marginBottom: 10,
         textTransform: 'uppercase',
-        letterSpacing: 0.5
+        letterSpacing: 0.5,
     },
-    iconContainer: {
-        width: 44,
-        height: 44,
-        borderRadius: 22,
+    statusChip: {
+        flexDirection: 'row',
         alignItems: 'center',
-        justifyContent: 'center',
-        shadowColor: "#000",
-        shadowOffset: {
-            width: 0,
-            height: 2,
-        },
-        shadowOpacity: 0.15,
-        shadowRadius: 4,
-        elevation: 3
+        paddingHorizontal: 10,
+        paddingVertical: 6,
+        borderRadius: 12,
+        gap: 4,
     },
-    checkIcon: {
-        fontSize: 20,
-        color: "#ffffff",
-        fontWeight: "bold"
+    statusYes: {
+        backgroundColor: '#d4edda',
     },
-    crossIcon: {
-        fontSize: 18,
-        color: "#ffffff",
-        fontWeight: "bold"
+    statusNo: {
+        backgroundColor: '#f8d7da',
     },
     statusText: {
-        fontSize: 16,
-        color: "#374151",
-        fontWeight: "600"
-    }
+        fontSize: 13,
+        fontWeight: '600',
+    },
+    actionButton: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center',
+        backgroundColor: '#2196F3',
+        padding: 12,
+        borderRadius: 8,
+        gap: 6,
+    },
+    actionButtonText: {
+        color: 'white',
+        fontSize: 15,
+        fontWeight: '600',
+    },
 });

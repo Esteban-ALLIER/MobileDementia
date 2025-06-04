@@ -1,7 +1,6 @@
 import { Stack, useLocalSearchParams, useRouter } from "expo-router";
-import { View, Text, Alert, ActivityIndicator, StyleSheet, Button as RNButton, ScrollView } from "react-native";
+import { View, Text, Alert, ActivityIndicator, StyleSheet, ScrollView, TouchableOpacity } from "react-native";
 import { useEffect, useState } from "react";
-import Button from "@/components/ui/Button";
 import { getDetailTicket, deleteTicket, updateTicket, closedTicket } from "@/services/ticket.service";
 import AddTicketForm from "@/components/tickets/TicketForm";
 import { TicketFirst } from "@/types/ticket";
@@ -10,6 +9,7 @@ import AddCommentModal from "@/components/comments/commentsForm";
 import { useAuth } from "@/context/ctx";
 import { addComment, listenToComments } from "@/services/comment.service";
 import { comments } from "@/types/comments";
+import Ionicons from "@expo/vector-icons/build/Ionicons";
 
 const TicketDetails = () => {
   const router = useRouter();
@@ -68,6 +68,7 @@ const TicketDetails = () => {
       Alert.alert("Ticket fermé", "Le ticket est fermé")
     }
   }
+
   const handleSaveEdit = async (updatedTicket: TicketFirst) => {
     if (!updatedTicket || !idTicket) return;
 
@@ -134,13 +135,12 @@ const TicketDetails = () => {
       ]
     );
   }
+
   const openCommentModal = () => {
-    {
-      if (ticket?.status !== "fermé") {
-        setCommentModalVisible(true);
-      } else {
-        Alert.alert("Ticket fermé", "Le ticket est fermé")
-      }
+    if (ticket?.status !== "fermé") {
+      setCommentModalVisible(true);
+    } else {
+      Alert.alert("Ticket fermé", "Le ticket est fermé")
     }
   }
 
@@ -162,18 +162,45 @@ const TicketDetails = () => {
     }
   }
 
+  const getStatusColor = (status: string) => {
+    switch (status.toLowerCase()) {
+      case 'ouvert': return '#e3f2fd';
+      case 'en cours': return '#fff3e0';
+      case 'fermé': return '#f8d7da';
+      default: return '#f8f9fa';
+    }
+  };
+
+  const getStatusTextColor = (status: string) => {
+    switch (status.toLowerCase()) {
+      case 'ouvert': return '#1976d2';
+      case 'en cours': return '#f57c00';
+      case 'fermé': return '#721c24';
+      default: return '#666';
+    }
+  };
+
+  const getPriorityColor = (priority: string) => {
+    switch (priority.toLowerCase()) {
+      case 'haute': return '#ffebee';
+      case 'moyenne': return '#fff3e0';
+      case 'basse': return '#e8f5e8';
+      default: return '#f8f9fa';
+    }
+  };
 
   const hasComments = comments.length > 0;
 
   if (!ticket) return (
     <View style={styles.centerContainer}>
-      <Text>Veuillez sélectionner un ticket dans la liste</Text>
+      <Text style={styles.emptyText}>Veuillez sélectionner un ticket dans la liste</Text>
     </View>
   );
 
   if (loading) return (
     <View style={styles.centerContainer}>
-      <ActivityIndicator size="large" color="#0066CC" />
+      <ActivityIndicator size="large" color="#2196F3" />
+      <Text style={styles.loadingText}>Chargement...</Text>
     </View>
   );
 
@@ -181,222 +208,313 @@ const TicketDetails = () => {
     <>
       <Stack.Screen options={{ headerShown: false }} />
       <ScrollView style={styles.container}>
-        {/* En-tête */}
-        <View style={styles.headerContainer}>
-          <Text style={styles.headerTitle}>{ticket.title}</Text>
-          <View style={styles.statusPill}>
-            <Text style={styles.statusText}>{ticket.status}</Text>
+        {/* Header Card */}
+        <View style={styles.headerCard}>
+          <View style={styles.headerTop}>
+            <Text style={styles.headerTitle} numberOfLines={2}>{ticket.title}</Text>
+            <View style={[styles.statusChip, { backgroundColor: getStatusColor(ticket.status) }]}>
+              <Text style={[styles.statusText, { color: getStatusTextColor(ticket.status) }]}>
+                {ticket.status}
+              </Text>
+            </View>
+          </View>
+        </View>
+
+        {/* Details Card */}
+        <View style={styles.detailsCard}>
+          <Text style={styles.sectionTitle}>Description</Text>
+          <Text style={styles.description}>{ticket.description}</Text>
+
+          <View style={styles.infoGrid}>
+            <View style={styles.infoItem}>
+              <Text style={styles.infoLabel}>Priorité</Text>
+              <View style={[styles.priorityChip, { backgroundColor: getPriorityColor(ticket.priority) }]}>
+                <Text style={styles.infoValue}>{ticket.priority}</Text>
+              </View>
+            </View>
+            <View style={styles.infoItem}>
+              <Text style={styles.infoLabel}>Catégorie</Text>
+              <Text style={styles.infoValue}>{ticket.category}</Text>
+            </View>
           </View>
         </View>
 
-        {/* Section infos */}
-        <View style={styles.section}>
-          <Text numberOfLines={3} style={styles.description}>{ticket.description}</Text>
-
-          <View style={styles.detailRow}>
-            <View style={styles.detailItem}>
-              <Text style={styles.detailLabel}>Priorité</Text>
-              <Text style={styles.detailValue}>{ticket.priority}</Text>
-            </View>
-            <View style={styles.detailItem}>
-              <Text style={styles.detailLabel}>Catégorie</Text>
-              <Text style={styles.detailValue}>{ticket.category}</Text>
-            </View>
+        {/* Meta Card */}
+        <View style={styles.metaCard}>
+          <Text style={styles.sectionTitle}>Informations</Text>
+          
+          <View style={styles.metaItem}>
+            <Ionicons name="person-outline" size={16} color="#666" />
+            <Text style={styles.metaLabel}>Créé par</Text>
+            <Text style={styles.metaValue}>{createdByUser}</Text>
           </View>
 
-          <View style={styles.divider} />
+          <View style={styles.metaItem}>
+            <Ionicons name="calendar-outline" size={16} color="#666" />
+            <Text style={styles.metaLabel}>Créé le</Text>
+            <Text style={styles.metaValue}>
+              {ticket.createdAt?.toDate().toLocaleDateString('fr-FR')}
+            </Text>
+          </View>
 
-          <View style={styles.metaContainer}>
-            <View style={styles.metaRow}>
-              <Text style={styles.metaLabel}>Créé par</Text>
-              <Text style={styles.metaValue}>{createdByUser}</Text>
-            </View>
-            <View style={styles.metaRow}>
-              <Text style={styles.metaLabel}>Créé le</Text>
-              <Text style={styles.metaValue}>{ticket.createdAt?.toDate().toLocaleDateString('fr-FR')}</Text>
-            </View>
-            <View style={styles.metaRow}>
-              <Text style={styles.metaLabel}>Mise à jour</Text>
-              <Text style={styles.metaValue}>{ticket.updatedAt?.toDate().toLocaleDateString('fr-FR')}</Text>
-            </View>
-
+          <View style={styles.metaItem}>
+            <Ionicons name="refresh-outline" size={16} color="#666" />
+            <Text style={styles.metaLabel}>Mis à jour</Text>
+            <Text style={styles.metaValue}>
+              {ticket.updatedAt?.toDate().toLocaleDateString('fr-FR')}
+            </Text>
           </View>
         </View>
 
-        {/* Actions principales */}
-        <View style={styles.actionRow}>
-          <Button theme="edit" label="Modifier" onPress={handleEdit} />
-          <Button theme="delete" label="Supprimer" onPress={handleDelete} />
-        </View>
+        {/* Actions Card */}
+        <View style={styles.actionsCard}>
+          <Text style={styles.sectionTitle}>Actions</Text>
+          
+          <View style={styles.actionsGrid}>
+            <TouchableOpacity style={[styles.actionButton, styles.editButton]} onPress={handleEdit}>
+              <Ionicons name="create-outline" size={18} color="white" />
+              <Text style={styles.actionButtonText}>Modifier</Text>
+            </TouchableOpacity>
 
-        <View style={styles.actionRow}>
-          <Button
-            theme="basique"
-            label="Ajouter un commentaire"
-            onPress={openCommentModal}
-          />
-        </View>
+            <TouchableOpacity style={[styles.actionButton, styles.deleteButton]} onPress={handleDelete}>
+              <Ionicons name="trash-outline" size={18} color="white" />
+              <Text style={styles.actionButtonText}>Supprimer</Text>
+            </TouchableOpacity>
+          </View>
 
-        <View style={styles.actionRow}>
+          <TouchableOpacity style={[styles.actionButton, styles.commentButton]} onPress={openCommentModal}>
+            <Ionicons name="chatbubble-outline" size={18} color="white" />
+            <Text style={styles.actionButtonText}>Ajouter un commentaire</Text>
+          </TouchableOpacity>
+
           {hasComments && (
-            <Button
-              theme="see"
-              label="Voir les commentaires"
-              onPress={goToCommentsScreen}
-            />
+            <TouchableOpacity style={[styles.actionButton, styles.viewButton]} onPress={goToCommentsScreen}>
+              <Ionicons name="eye-outline" size={18} color="white" />
+              <Text style={styles.actionButtonText}>Voir les commentaires ({comments.length})</Text>
+            </TouchableOpacity>
           )}
+
+          <TouchableOpacity style={[styles.actionButton, styles.closeButton]} onPress={handleCloseTicket}>
+            <Ionicons name="close-circle-outline" size={18} color="white" />
+            <Text style={styles.actionButtonText}>Fermer le ticket</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity style={[styles.actionButton, styles.backButton]} onPress={goToTicketsIndex}>
+            <Ionicons name="arrow-back-outline" size={18} color="#666" />
+            <Text style={styles.backButtonText}>Retour à la liste</Text>
+          </TouchableOpacity>
         </View>
-        <View style={styles.actionRow}>
-          <Button
-            theme="close"
-            label="Fermé le ticket"
-            onPress={handleCloseTicket}
-          />
-        </View>
-        <View style={styles.actionRow}>
-          <Button
-            theme="return"
-            label="Retour à la liste"
-            onPress={goToTicketsIndex}
-          />
-        </View>
-      </ScrollView >
+      </ScrollView>
 
       {/* Modals */}
-      {
-        commentModalVisible && (
-          <AddCommentModal
-            visible={commentModalVisible}
-            onClose={() => setCommentModalVisible(false)}
-            onSave={(text) => handleAddComment(text)}
-          />
-        )
-      }
-      {
-        isEditModalVisible && (
-          <AddTicketForm
-            visible={isEditModalVisible}
-            onClose={() => setIsEditModalVisible(false)}
-            onSave={handleSaveEdit}
-            initialTicket={ticket}
-          />
-        )
-      }
+      {commentModalVisible && (
+        <AddCommentModal
+          visible={commentModalVisible}
+          onClose={() => setCommentModalVisible(false)}
+          onSave={(text) => handleAddComment(text)}
+        />
+      )}
+      {isEditModalVisible && (
+        <AddTicketForm
+          visible={isEditModalVisible}
+          onClose={() => setIsEditModalVisible(false)}
+          onSave={handleSaveEdit}
+          initialTicket={ticket}
+        />
+      )}
     </>
   );
 };
 
-// Styles
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f8f9fa',
-    padding: 16,
+    backgroundColor: '#f5f5f5',
+    padding: 15,
   },
   centerContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
     padding: 20,
+    backgroundColor: '#f5f5f5',
   },
-  headerContainer: {
+  emptyText: {
+    fontSize: 16,
+    color: '#666',
+    textAlign: 'center',
+  },
+  loadingText: {
+    fontSize: 16,
+    color: '#666',
+    marginTop: 10,
+  },
+  headerCard: {
+    backgroundColor: 'white',
+    borderRadius: 12,
+    padding: 20,
+    marginBottom: 15,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 3,
+    elevation: 3,
+  },
+  headerTop: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 16,
+    alignItems: 'flex-start',
+    gap: 15,
   },
   headerTitle: {
-    fontSize: 22,
+    fontSize: 20,
     fontWeight: 'bold',
     color: '#333',
     flex: 1,
+    lineHeight: 26,
   },
-  statusPill: {
+  statusChip: {
     paddingHorizontal: 12,
-    paddingVertical: 4,
-    borderRadius: 50,
-    marginLeft: 10,
-    backgroundColor: '#0066CC',
+    paddingVertical: 6,
+    borderRadius: 15,
+    minWidth: 70,
+    alignItems: 'center',
   },
   statusText: {
-    color: 'white',
+    fontSize: 13,
     fontWeight: '600',
-    fontSize: 12,
+    textTransform: 'capitalize',
   },
-  section: {
+  detailsCard: {
     backgroundColor: 'white',
-    borderRadius: 10,
-    padding: 16,
-    marginBottom: 16,
-    elevation: 2,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
+    borderRadius: 12,
+    padding: 20,
+    marginBottom: 15,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
-    shadowRadius: 2,
+    shadowRadius: 3,
+    elevation: 3,
+  },
+  sectionTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#333',
+    marginBottom: 15,
   },
   description: {
     fontSize: 15,
     color: '#555',
-    marginBottom: 16,
+    lineHeight: 22,
+    marginBottom: 20,
   },
-  detailRow: {
+  infoGrid: {
     flexDirection: 'row',
-    marginBottom: 16,
+    gap: 20,
   },
-  detailItem: {
+  infoItem: {
     flex: 1,
   },
-  detailLabel: {
+  infoLabel: {
     fontSize: 13,
-    color: '#777',
-    marginBottom: 2,
+    color: '#666',
+    marginBottom: 6,
   },
-  detailValue: {
-    fontSize: 15,
-    fontWeight: '500',
-  },
-  divider: {
-    height: 1,
-    backgroundColor: '#eee',
-    marginVertical: 12,
-  },
-  metaContainer: {
-    marginTop: 8,
-  },
-  metaRow: {
-    flexDirection: 'row',
-    paddingVertical: 4,
-  },
-  metaLabel: {
-    width: 80,
-    fontSize: 13,
-    color: '#777',
-  },
-  metaValue: {
-    flex: 1,
+  infoValue: {
     fontSize: 14,
-    color: '#444',
+    fontWeight: '500',
+    color: '#333',
   },
-  actionRow: {
+  priorityChip: {
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 12,
+    alignSelf: 'flex-start',
+  },
+  metaCard: {
+    backgroundColor: 'white',
+    borderRadius: 12,
+    padding: 20,
+    marginBottom: 15,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 3,
+    elevation: 3,
+  },
+  metaItem: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginBottom: 16,
-  },
-  editButton: {
-    flex: 1,
-    marginRight: 8,
-  },
-  deleteButton: {
-    flex: 1,
-    marginLeft: 8,
-  },
-  secondaryActions: {
-    marginBottom: 24,
+    alignItems: 'center',
+    paddingVertical: 8,
     gap: 10,
   },
-  backButton: {
-    backgroundColor: '#999',
+  metaLabel: {
+    fontSize: 14,
+    color: '#666',
+    width: 80,
+  },
+  metaValue: {
+    fontSize: 14,
+    color: '#333',
+    fontWeight: '500',
+    flex: 1,
+  },
+  actionsCard: {
+    backgroundColor: 'white',
+    borderRadius: 12,
+    padding: 20,
     marginBottom: 20,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 3,
+    elevation: 3,
+  },
+  actionsGrid: {
+    flexDirection: 'row',
+    gap: 10,
+    marginBottom: 10,
+  },
+  actionButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: 12,
+    borderRadius: 8,
+    marginBottom: 10,
+    gap: 6,
+  },
+  editButton: {
+    backgroundColor: '#2196F3',
+    flex: 1,
+  },
+  deleteButton: {
+    backgroundColor: '#f44336',
+    flex: 1,
+  },
+  commentButton: {
+    backgroundColor: '#4CAF50',
+  },
+  viewButton: {
+    backgroundColor: '#FF9800',
+  },
+  closeButton: {
+    backgroundColor: '#9E9E9E',
+  },
+  backButton: {
+    backgroundColor: 'transparent',
+    borderWidth: 1.5,
+    borderColor: '#e0e0e0',
+  },
+  actionButtonText: {
+    color: 'white',
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  backButtonText: {
+    color: '#666',
+    fontSize: 14,
+    fontWeight: '600',
   },
 });
 
