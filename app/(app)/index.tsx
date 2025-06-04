@@ -20,6 +20,9 @@ export default function Index() {
   const handleOpenList = () => {
     router.push(`/profile/utilisateurs`);
   }
+  const GoToUserInfoEdit = () => {
+    router.push(`/profile/UserEdit`);
+  }
 
   const fetchTickets = async () => {
     if (user) {
@@ -86,10 +89,6 @@ export default function Index() {
     auth.signOut();
   }
 
-  const goToTicketsIndex = () => {
-    router.replace("/tickets/index");
-  }
-
   return (
     <ScrollView
       contentContainerStyle={styles.container}
@@ -109,7 +108,7 @@ export default function Index() {
         <ActivityIndicator size="small" color="#0066CC" />
       ) : (
         <>
-          {role === "Admin" && (
+          {(role === "Admin" || role == "Reviewer") && (
             <Text style={styles.label}>Vous avez {ticketCount} ticket(s) en cours</Text>
           )}
 
@@ -118,6 +117,16 @@ export default function Index() {
           )}
         </>
       )}
+      {(role === "Reviewer" || role === "Admin") && (
+        <Bt
+          mode="contained"
+          onPress={GoToUserInfoEdit}
+          style={styles.actionButton}
+          icon="ticket"
+        >
+          Gérer les utilisateurs
+        </Bt>
+      )}
       {role === "Admin" && (
         <Bt
           mode="contained"
@@ -125,7 +134,7 @@ export default function Index() {
           style={styles.actionButton}
           icon="account-group"
         >
-          Gérer les utilisateurs
+          Gérer les roles
         </Bt>
       )}
 

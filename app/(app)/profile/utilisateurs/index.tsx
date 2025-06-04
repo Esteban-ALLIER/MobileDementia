@@ -78,7 +78,13 @@ const UserProfile = () => {
             }
 
             try {
-                await updateUser(selectedUser.userId);
+                await updateUser(selectedUser.userId, {
+                    PseudoInGame: selectedUser.PseudoInGame,
+                    email: selectedUser.email,
+                    role: "Reviewer",
+                    Core: selectedUser.Core,
+                    Regear: selectedUser.Regear
+                });
                 setModalVisible(false);
                 getUsers();
                 Alert.alert(

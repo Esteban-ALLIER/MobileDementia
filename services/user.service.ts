@@ -15,6 +15,8 @@ const getUserData = async (uid: string) => {
       email: data.email || "",
       PseudoInGame: data.PseudoInGame || "",
       role: data.role || "",
+      Core: data.Core || "",
+      Regear: data.Regear || "",
     };
   }
 
@@ -61,7 +63,7 @@ const listenToSupportUsers = (
 
 
 
-const updateUser = async (userId: string): Promise<void> => {
+const updateUser = async (userId: string, p0: { PseudoInGame: string; email: string; role: "Membre" | "Reviewer" | "Admin"; Core: string; Regear: string; }): Promise<void> => {
   if (!userId) throw new Error("ID d'utilisateur manquant.");
 
   const userRef = doc(db, "Users", userId);

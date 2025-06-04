@@ -4,5 +4,7 @@ import { Timestamp } from "firebase/firestore";
     userId:string,
     email: string;
     PseudoInGame: string;
+    Core: string;
+    Regear: string;
     role: 'Membre' | 'Reviewer' | 'Admin'
   }

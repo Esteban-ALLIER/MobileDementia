@@ -35,6 +35,8 @@ export default function Register() {
         email: email,
         PseudoInGame: PseudoInGame,
         role: "Membre",
+        Core: "Non",
+        Regear: "Non",
         userId: user.uid
       });
       Alert.alert("Succès", "Inscription réussie !");
