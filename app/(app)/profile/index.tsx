@@ -1,9 +1,12 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { useAuth } from '@/context/ctx';
+import { TextInput, IconButton, Button as Bt } from "react-native-paper";
 import { getUserData } from '@/services/user.service';
+import { useRouter } from 'expo-router';
 
 export default function Profile() {
+      const router = useRouter();
     const { user, role } = useAuth();
     const [userData, setUserData] = useState({
         email: "",
@@ -45,6 +48,9 @@ export default function Profile() {
             return <Text style={styles.statusText}>{value}</Text>;
         }
     };
+    const GoToStatInGame = () => {
+        router.push("/profile/StatInGame");
+    }
 
     return (
         <View style={styles.container}>
@@ -58,7 +64,7 @@ export default function Profile() {
                     <View style={styles.cardHeader}>
                         <Text style={styles.cardTitle}>Informations personnelles</Text>
                     </View>
-                    
+
                     <View style={styles.infoRow}>
                         <Text style={styles.label}>Email</Text>
                         <Text style={styles.value}>{userData.email}</Text>
@@ -83,7 +89,7 @@ export default function Profile() {
                     <View style={styles.cardHeader}>
                         <Text style={styles.cardTitle}>Statut</Text>
                     </View>
-                    
+
                     <View style={styles.statusGrid}>
                         <View style={styles.statusItem}>
                             <Text style={styles.statusLabel}>Core</Text>
@@ -98,6 +104,16 @@ export default function Profile() {
                         </View>
                     </View>
                 </View>
+            </View>
+            <View style={styles.cardContainer}>
+                <Bt
+                    mode="contained"
+                    onPress={GoToStatInGame}
+                    style={styles.actionButton}
+                    icon="ticket"
+                >
+                    Gérer les utilisateurs
+                </Bt>
             </View>
         </View>
     );
@@ -160,6 +176,10 @@ const styles = StyleSheet.create({
         borderWidth: 1,
         borderColor: "#f1f5f9"
     },
+    actionButton: {
+    marginBottom: 12,
+    width: '80%',
+  },
     cardHeader: {
         marginBottom: 20
     },
