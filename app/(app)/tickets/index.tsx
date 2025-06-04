@@ -3,7 +3,7 @@ import TicketList from "@/components/tickets/TicketCard";
 import { createTicket, getAllTickets } from "@/services/ticket.service";
 import { useEffect, useState } from "react";
 import { Redirect, useRouter } from "expo-router";
-import { Button, Platform, RefreshControl, SafeAreaView, StyleSheet, TextInput, View, Text, TouchableOpacity } from "react-native";
+import { Button, Platform, SafeAreaView, StyleSheet, TextInput, View, Text, TouchableOpacity } from "react-native";
 import React from "react";
 import Ionicons from "@expo/vector-icons/build/Ionicons";
 import { TicketFirst } from "@/types/ticket";

@@ -1,11 +1,12 @@
 import React, { useState } from "react";
-import { View, StyleSheet, Alert } from "react-native";
+import { View, StyleSheet, Alert, TouchableOpacity } from "react-native";
 import { TextInput, IconButton, Button as Bt } from "react-native-paper";
 import { sendEmailVerification, signInWithEmailAndPassword } from "firebase/auth";
 import { auth, db } from "@/config/firebase";
 import { Link, useRouter } from "expo-router";
 import Button from "@/components/ui/Button";
 import { doc, Timestamp, updateDoc } from "firebase/firestore";
+import { Eye, EyeOff } from 'lucide-react-native';
 // import { registerForPushNotificationsAsync } from "@/hooks/usePushNotification";
 
 const LoginScreen = () => {
@@ -28,18 +29,18 @@ const LoginScreen = () => {
 
     setLoading(true);
     try {
-      const userCredential= await signInWithEmailAndPassword(auth, email, password);
+      const userCredential = await signInWithEmailAndPassword(auth, email, password);
       const user = userCredential.user;
 
       const userRef = doc(db, "Users", user.uid);
       await updateDoc(userRef, {
         lastLogin: Timestamp.now(),
       });
-      Alert.alert("Succès", "Connexion réussie !");
-      router.replace("/(app)/index")
+      router.replace("/(app)")
       // Redirection ou mise à jour de l'état après connexion
     } catch (error) {
-      Alert.alert("Erreur", (error as Error).message);
+      const errorMessage = (error instanceof Error) ? error.message : "Une erreur inconnue s'est produite.";
+      Alert.alert("Erreur, mot de passe ou email incorrect", errorMessage);
     }
     setLoading(false);
   };
@@ -66,10 +67,16 @@ const LoginScreen = () => {
           autoCapitalize="none"
           style={styles.passwordInput}
         />
-        <IconButton
-          icon={secureText ? "eye-off" : "eye"}
+        <TouchableOpacity
+          style={styles.eyeIcon}
           onPress={() => setSecureText(!secureText)}
-        />
+        >
+          {secureText ? (
+            <EyeOff size={24} color="#666" />
+          ) : (
+            <Eye size={24} color="#666" />
+          )}
+        </TouchableOpacity>
       </View>
 
       <Bt
@@ -110,6 +117,12 @@ const styles = StyleSheet.create({
   },
   button: {
     marginTop: 20,
+  },
+  eyeIcon: {
+    position: 'absolute',
+    right: 15,
+    top: 20,
+    padding: 5,
   },
 });
 
