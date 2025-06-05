@@ -1,4 +1,4 @@
-import { Text, View, StyleSheet, Pressable, ActivityIndicator, ScrollView, RefreshControl, TouchableOpacity } from 'react-native';
+import { Text, View, StyleSheet, Pressable, ActivityIndicator, ScrollView, RefreshControl, TouchableOpacity, SafeAreaView } from 'react-native';
 import { Link, Redirect, useRootNavigationState, useRouter } from 'expo-router';
 import { useAuth } from '@/context/ctx';
 import { getAuth } from 'firebase/auth';
@@ -19,7 +19,7 @@ export default function Index() {
   const handleOpenList = () => {
     router.push(`/profile/utilisateurs`);
   }
-  
+
   const GoToUserInfoEdit = () => {
     router.push(`/profile/UserEdit`);
   }
@@ -81,8 +81,9 @@ export default function Index() {
     fetchPseudo();
   }, [user]);
 
+  // ✅ CORRIGÉ : Navigation correcte
   if (!user)
-    return <Redirect href="/login" />
+    return <Redirect href="/(auth)/login" />
 
   const signOut = () => {
     const auth = getAuth();
@@ -108,246 +109,283 @@ export default function Index() {
   };
 
   return (
-    <ScrollView
-      contentContainerStyle={styles.container}
-      refreshControl={
-        <RefreshControl 
-          refreshing={refreshing} 
-          onRefresh={onRefresh}
-          colors={['#2196F3']}
-          tintColor="#2196F3"
-        />
-      }
-    >
-      <View style={styles.welcomeCard}>
-        <Text style={styles.welcomeTitle}>Bienvenue</Text>
-        
-        <View style={[styles.roleChip, { backgroundColor: getRoleColor(role || '') }]}>
-          <Text style={[styles.roleText, { color: getRoleTextColor(role || '') }]}>
-            {role}
-          </Text>
-        </View>
-
-        {pseudoInGame && (
-          <View style={styles.pseudoContainer}>
-            <Text style={styles.pseudoLabel}>Pseudo In Game :</Text>
-            <Text style={styles.pseudoValue}>{pseudoInGame}</Text>
+    <SafeAreaView style={styles.safeArea}>
+      <ScrollView
+        style={styles.container}
+        contentContainerStyle={styles.scrollContent}
+        showsVerticalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+            colors={['#2196F3']}
+            tintColor="#2196F3"
+          />
+        }
+      >
+        {/* Welcome Card avec icône */}
+        <View style={styles.welcomeCard}>
+          <View style={styles.welcomeIconContainer}>
+            <Ionicons name="person-circle-outline" size={48} color="#2196F3" />
           </View>
-        )}
-      </View>
+          <Text style={styles.welcomeTitle}>Bienvenue</Text>
 
-      <View style={styles.statsCard}>
-        <View style={styles.statsHeader}>
-          <Ionicons name="ticket-outline" size={24} color="#2196F3" />
-          <Text style={styles.statsTitle}>Tickets</Text>
-        </View>
-
-        {loadingTickets ? (
-          <View style={styles.loadingContainer}>
-            <ActivityIndicator size="small" color="#2196F3" />
-            <Text style={styles.loadingText}>Chargement...</Text>
-          </View>
-        ) : (
-          <View style={styles.statsContent}>
-            <Text style={styles.ticketCount}>{ticketCount}</Text>
-            <Text style={styles.ticketLabel}>
-              {role === "Membre" 
-                ? ticketCount > 1 ? "tickets créés" : "ticket créé"
-                : ticketCount > 1 ? "tickets en cours" : "ticket en cours"
-              }
+          <View style={[styles.roleChip, { backgroundColor: getRoleColor(role || '') }]}>
+            <Text style={[styles.roleText, { color: getRoleTextColor(role || '') }]}>
+              {role}
             </Text>
           </View>
-        )}
-      </View>
 
-      <View style={styles.actionsContainer}>
-        <Text style={styles.actionsTitle}>Actions disponibles</Text>
-        
-        {(role === "Reviewer" || role === "Admin") && (
-          <TouchableOpacity
-            style={[styles.actionButton, styles.primaryAction]}
-            onPress={GoToUserInfoEdit}
-          >
-            <Ionicons name="people-outline" size={20} color="white" />
-            <Text style={styles.actionButtonText}>Gérer les utilisateurs</Text>
-          </TouchableOpacity>
-        )}
+          {pseudoInGame && (
+            <View style={styles.pseudoContainer}>
+              <Ionicons name="game-controller-outline" size={16} color="#64748b" />
+              <Text style={styles.pseudoLabel}>Pseudo In Game :</Text>
+              <Text style={styles.pseudoValue}>{pseudoInGame}</Text>
+            </View>
+          )}
+        </View>
 
-        {role === "Admin" && (
-          <TouchableOpacity
-            style={[styles.actionButton, styles.primaryAction]}
-            onPress={handleOpenList}
-          >
-            <Ionicons name="shield-outline" size={20} color="white" />
-            <Text style={styles.actionButtonText}>Gérer les rôles</Text>
-          </TouchableOpacity>
-        )}
+        {/* Stats Card avec icône */}
+        <View style={styles.statsCard}>
+          <View style={styles.statsHeader}>
+            <Ionicons name="ticket-outline" size={24} color="#2196F3" />
+            <Text style={styles.statsTitle}>Tickets</Text>
+          </View>
 
-        <TouchableOpacity
-          style={[styles.actionButton, styles.logoutButton]}
-          onPress={signOut}
-        >
-          <Ionicons name="log-out-outline" size={20} color="#666" />
-          <Text style={styles.logoutButtonText}>Se déconnecter</Text>
-        </TouchableOpacity>
-      </View>
-    </ScrollView>
+          {loadingTickets ? (
+            <View style={styles.loadingContainer}>
+              <ActivityIndicator size="small" color="#2196F3" />
+              <Text style={styles.loadingText}>Chargement...</Text>
+            </View>
+          ) : (
+            <View style={styles.statsContent}>
+              <Text style={styles.ticketCount}>{ticketCount}</Text>
+              <Text style={styles.ticketLabel}>
+                {role === "Membre"
+                  ? ticketCount > 1 ? "tickets créés" : "ticket créé"
+                  : ticketCount > 1 ? "tickets en cours" : "ticket en cours"
+                }
+              </Text>
+            </View>
+          )}
+        </View>
+
+        {/* Actions Card avec icônes */}
+        <View style={styles.actionsCard}>
+          <View style={styles.actionsHeader}>
+            <Ionicons name="settings-outline" size={20} color="#2196F3" />
+            <Text style={styles.actionsTitle}>Actions disponibles</Text>
+          </View>
+
+          <View style={styles.actionsContainer}>
+            {(role === "Reviewer" || role === "Admin") && (
+              <TouchableOpacity
+                style={[styles.actionButton, styles.primaryAction]}
+                onPress={GoToUserInfoEdit}
+                activeOpacity={0.8}
+              >
+                <Ionicons name="people-outline" size={18} color="white" />
+                <Text style={styles.actionButtonText}>Gérer les utilisateurs</Text>
+              </TouchableOpacity>
+            )}
+
+            {role === "Admin" && (
+              <TouchableOpacity
+                style={[styles.actionButton, styles.primaryAction]}
+                onPress={handleOpenList}
+                activeOpacity={0.8}
+              >
+                <Ionicons name="shield-outline" size={18} color="white" />
+                <Text style={styles.actionButtonText}>Gérer les rôles</Text>
+              </TouchableOpacity>
+            )}
+
+            <TouchableOpacity
+              style={[styles.actionButton, styles.logoutButton]}
+              onPress={signOut}
+              activeOpacity={0.8}
+            >
+              <Ionicons name="log-out-outline" size={18} color="#666" />
+              <Text style={styles.logoutButtonText}>Se déconnecter</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </ScrollView>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flexGrow: 1,
+  safeArea: {
+    flex: 1,
     backgroundColor: '#f5f5f5',
-    padding: 20,
+  },
+  container: {
+    flex: 1,
+  },
+  scrollContent: {
+    flexGrow: 1,
+    padding: 16,
+    paddingBottom: 30,
   },
   welcomeCard: {
     backgroundColor: 'white',
-    borderRadius: 15,
-    padding: 25,
-    marginBottom: 20,
+    borderRadius: 16,
+    padding: 24,
+    marginBottom: 16,
     shadowColor: "#000",
-    shadowOffset: {
-      width: 0,
-      height: 2
-    },
-    shadowOpacity: 0.25,
-    shadowRadius: 4,
-    elevation: 5,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    elevation: 4,
     alignItems: 'center',
   },
+  welcomeIconContainer: {
+    marginBottom: 12,
+  },
   welcomeTitle: {
-    fontSize: 28,
+    fontSize: 26,
     fontWeight: 'bold',
-    marginBottom: 15,
-    color: '#333',
+    marginBottom: 16,
+    color: '#1e293b',
     textAlign: 'center',
   },
   roleChip: {
     paddingHorizontal: 16,
     paddingVertical: 8,
     borderRadius: 20,
-    marginBottom: 15,
+    marginBottom: 16,
   },
   roleText: {
-    fontSize: 16,
+    fontSize: 15,
     fontWeight: '600',
   },
   pseudoContainer: {
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: '#f8f9fa',
-    paddingHorizontal: 15,
-    paddingVertical: 10,
-    borderRadius: 8,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    borderRadius: 12,
     borderWidth: 1,
-    borderColor: '#e0e0e0',
+    borderColor: '#e2e8f0',
+    minWidth: '80%',
+    justifyContent: 'center',
+    gap: 8,
   },
   pseudoLabel: {
     fontSize: 14,
-    color: '#666',
-    marginRight: 8,
+    color: '#64748b',
   },
   pseudoValue: {
-    fontSize: 16,
+    fontSize: 15,
     fontWeight: '600',
-    color: '#333',
+    color: '#1e293b',
   },
   statsCard: {
     backgroundColor: 'white',
-    borderRadius: 15,
+    borderRadius: 16,
     padding: 20,
-    marginBottom: 20,
+    marginBottom: 16,
     shadowColor: "#000",
-    shadowOffset: {
-      width: 0,
-      height: 2
-    },
-    shadowOpacity: 0.25,
-    shadowRadius: 4,
-    elevation: 5,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    elevation: 4,
   },
   statsHeader: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 15,
+    marginBottom: 16,
   },
   statsTitle: {
     fontSize: 18,
     fontWeight: '600',
     marginLeft: 10,
-    color: '#333',
+    color: '#1e293b',
   },
   loadingContainer: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: 20,
+    paddingVertical: 24,
   },
   loadingText: {
     marginLeft: 10,
-    fontSize: 16,
-    color: '#666',
+    fontSize: 15,
+    color: '#64748b',
   },
   statsContent: {
     alignItems: 'center',
-    paddingVertical: 10,
+    paddingVertical: 12,
   },
   ticketCount: {
     fontSize: 36,
     fontWeight: 'bold',
     color: '#2196F3',
-    marginBottom: 5,
+    marginBottom: 6,
   },
   ticketLabel: {
-    fontSize: 16,
-    color: '#666',
+    fontSize: 15,
+    color: '#64748b',
+    textAlign: 'center',
   },
-  actionsContainer: {
+  actionsCard: {
     backgroundColor: 'white',
-    borderRadius: 15,
+    borderRadius: 16,
     padding: 20,
     shadowColor: "#000",
-    shadowOffset: {
-      width: 0,
-      height: 2
-    },
-    shadowOpacity: 0.25,
-    shadowRadius: 4,
-    elevation: 5,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    elevation: 4,
+  },
+  actionsHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 16,
   },
   actionsTitle: {
     fontSize: 18,
     fontWeight: '600',
-    marginBottom: 15,
-    color: '#333',
+    marginLeft: 8,
+    color: '#1e293b',
+  },
+  actionsContainer: {
+    gap: 12,
   },
   actionButton: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    padding: 15,
-    borderRadius: 8,
-    marginBottom: 10,
+    paddingVertical: 14,
+    paddingHorizontal: 20,
+    borderRadius: 12,
+    minHeight: 48,
   },
   primaryAction: {
     backgroundColor: '#2196F3',
+    shadowColor: "#2196F3",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 4,
+    elevation: 3,
   },
   actionButtonText: {
     color: 'white',
-    fontSize: 16,
+    fontSize: 15,
     fontWeight: '600',
     marginLeft: 8,
   },
   logoutButton: {
     backgroundColor: 'transparent',
-    borderWidth: 2,
-    borderColor: '#e0e0e0',
-    marginTop: 10,
+    borderWidth: 1.5,
+    borderColor: '#e2e8f0',
+    marginTop: 8,
   },
   logoutButtonText: {
-    color: '#666',
-    fontSize: 16,
+    color: '#64748b',
+    fontSize: 15,
     fontWeight: '600',
     marginLeft: 8,
   },

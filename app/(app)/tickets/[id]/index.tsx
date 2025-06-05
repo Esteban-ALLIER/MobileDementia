@@ -1,5 +1,5 @@
 import { Stack, useLocalSearchParams, useRouter } from "expo-router";
-import { View, Text, Alert, ActivityIndicator, StyleSheet, ScrollView, TouchableOpacity } from "react-native";
+import { View, Text, Alert, ActivityIndicator, StyleSheet, ScrollView, TouchableOpacity, SafeAreaView } from "react-native";
 import { useEffect, useState } from "react";
 import { getDetailTicket, deleteTicket, updateTicket, closedTicket } from "@/services/ticket.service";
 import AddTicketForm from "@/components/tickets/TicketForm";
@@ -192,26 +192,39 @@ const TicketDetails = () => {
   const hasComments = comments.length > 0;
 
   if (!ticket) return (
-    <View style={styles.centerContainer}>
-      <Text style={styles.emptyText}>Veuillez sélectionner un ticket dans la liste</Text>
-    </View>
+    <SafeAreaView style={styles.safeArea}>
+      <View style={styles.centerContainer}>
+        <Ionicons name="document-outline" size={48} color="#cbd5e1" />
+        <Text style={styles.emptyText}>Veuillez sélectionner un ticket dans la liste</Text>
+        <TouchableOpacity style={styles.backToListButton} onPress={goToTicketsIndex}>
+          <Ionicons name="arrow-back-outline" size={18} color="#2196F3" />
+          <Text style={styles.backToListText}>Retour à la liste</Text>
+        </TouchableOpacity>
+      </View>
+    </SafeAreaView>
   );
 
   if (loading) return (
-    <View style={styles.centerContainer}>
-      <ActivityIndicator size="large" color="#2196F3" />
-      <Text style={styles.loadingText}>Chargement...</Text>
-    </View>
+    <SafeAreaView style={styles.safeArea}>
+      <View style={styles.centerContainer}>
+        <ActivityIndicator size="large" color="#2196F3" />
+        <Text style={styles.loadingText}>Chargement...</Text>
+      </View>
+    </SafeAreaView>
   );
 
   return (
-    <>
+    <SafeAreaView style={styles.safeArea}>
       <Stack.Screen options={{ headerShown: false }} />
-      <ScrollView style={styles.container}>
+      <ScrollView 
+        style={styles.container}
+        contentContainerStyle={styles.scrollContent}
+        showsVerticalScrollIndicator={false}
+      >
         {/* Header Card */}
         <View style={styles.headerCard}>
           <View style={styles.headerTop}>
-            <Text style={styles.headerTitle} numberOfLines={2}>{ticket.title}</Text>
+            <Text style={styles.headerTitle} numberOfLines={3}>{ticket.title}</Text>
             <View style={[styles.statusChip, { backgroundColor: getStatusColor(ticket.status) }]}>
               <Text style={[styles.statusText, { color: getStatusTextColor(ticket.status) }]}>
                 {ticket.status}
@@ -222,7 +235,10 @@ const TicketDetails = () => {
 
         {/* Details Card */}
         <View style={styles.detailsCard}>
-          <Text style={styles.sectionTitle}>Description</Text>
+          <View style={styles.cardHeader}>
+            <Ionicons name="document-text-outline" size={20} color="#2196F3" />
+            <Text style={styles.sectionTitle}>Description</Text>
+          </View>
           <Text style={styles.description}>{ticket.description}</Text>
 
           <View style={styles.infoGrid}>
@@ -241,16 +257,19 @@ const TicketDetails = () => {
 
         {/* Meta Card */}
         <View style={styles.metaCard}>
-          <Text style={styles.sectionTitle}>Informations</Text>
+          <View style={styles.cardHeader}>
+            <Ionicons name="information-circle-outline" size={20} color="#2196F3" />
+            <Text style={styles.sectionTitle}>Informations</Text>
+          </View>
           
           <View style={styles.metaItem}>
-            <Ionicons name="person-outline" size={16} color="#666" />
+            <Ionicons name="person-outline" size={16} color="#64748b" />
             <Text style={styles.metaLabel}>Créé par</Text>
             <Text style={styles.metaValue}>{createdByUser}</Text>
           </View>
 
           <View style={styles.metaItem}>
-            <Ionicons name="calendar-outline" size={16} color="#666" />
+            <Ionicons name="calendar-outline" size={16} color="#64748b" />
             <Text style={styles.metaLabel}>Créé le</Text>
             <Text style={styles.metaValue}>
               {ticket.createdAt?.toDate().toLocaleDateString('fr-FR')}
@@ -258,7 +277,7 @@ const TicketDetails = () => {
           </View>
 
           <View style={styles.metaItem}>
-            <Ionicons name="refresh-outline" size={16} color="#666" />
+            <Ionicons name="refresh-outline" size={16} color="#64748b" />
             <Text style={styles.metaLabel}>Mis à jour</Text>
             <Text style={styles.metaValue}>
               {ticket.updatedAt?.toDate().toLocaleDateString('fr-FR')}
@@ -268,39 +287,66 @@ const TicketDetails = () => {
 
         {/* Actions Card */}
         <View style={styles.actionsCard}>
-          <Text style={styles.sectionTitle}>Actions</Text>
+          <View style={styles.cardHeader}>
+            <Ionicons name="options-outline" size={20} color="#2196F3" />
+            <Text style={styles.sectionTitle}>Actions</Text>
+          </View>
           
           <View style={styles.actionsGrid}>
-            <TouchableOpacity style={[styles.actionButton, styles.editButton]} onPress={handleEdit}>
-              <Ionicons name="create-outline" size={18} color="white" />
+            <TouchableOpacity 
+              style={[styles.actionButton, styles.editButton]} 
+              onPress={handleEdit}
+              activeOpacity={0.8}
+            >
+              <Ionicons name="create-outline" size={16} color="white" />
               <Text style={styles.actionButtonText}>Modifier</Text>
             </TouchableOpacity>
 
-            <TouchableOpacity style={[styles.actionButton, styles.deleteButton]} onPress={handleDelete}>
-              <Ionicons name="trash-outline" size={18} color="white" />
+            <TouchableOpacity 
+              style={[styles.actionButton, styles.deleteButton]} 
+              onPress={handleDelete}
+              activeOpacity={0.8}
+            >
+              <Ionicons name="trash-outline" size={16} color="white" />
               <Text style={styles.actionButtonText}>Supprimer</Text>
             </TouchableOpacity>
           </View>
 
-          <TouchableOpacity style={[styles.actionButton, styles.commentButton]} onPress={openCommentModal}>
-            <Ionicons name="chatbubble-outline" size={18} color="white" />
+          <TouchableOpacity 
+            style={[styles.actionButton, styles.commentButton]} 
+            onPress={openCommentModal}
+            activeOpacity={0.8}
+          >
+            <Ionicons name="chatbubble-outline" size={16} color="white" />
             <Text style={styles.actionButtonText}>Ajouter un commentaire</Text>
           </TouchableOpacity>
 
           {hasComments && (
-            <TouchableOpacity style={[styles.actionButton, styles.viewButton]} onPress={goToCommentsScreen}>
-              <Ionicons name="eye-outline" size={18} color="white" />
+            <TouchableOpacity 
+              style={[styles.actionButton, styles.viewButton]} 
+              onPress={goToCommentsScreen}
+              activeOpacity={0.8}
+            >
+              <Ionicons name="eye-outline" size={16} color="white" />
               <Text style={styles.actionButtonText}>Voir les commentaires ({comments.length})</Text>
             </TouchableOpacity>
           )}
 
-          <TouchableOpacity style={[styles.actionButton, styles.closeButton]} onPress={handleCloseTicket}>
-            <Ionicons name="close-circle-outline" size={18} color="white" />
+          <TouchableOpacity 
+            style={[styles.actionButton, styles.closeButton]} 
+            onPress={handleCloseTicket}
+            activeOpacity={0.8}
+          >
+            <Ionicons name="close-circle-outline" size={16} color="white" />
             <Text style={styles.actionButtonText}>Fermer le ticket</Text>
           </TouchableOpacity>
 
-          <TouchableOpacity style={[styles.actionButton, styles.backButton]} onPress={goToTicketsIndex}>
-            <Ionicons name="arrow-back-outline" size={18} color="#666" />
+          <TouchableOpacity 
+            style={[styles.actionButton, styles.backButton]} 
+            onPress={goToTicketsIndex}
+            activeOpacity={0.8}
+          >
+            <Ionicons name="arrow-back-outline" size={16} color="#64748b" />
             <Text style={styles.backButtonText}>Retour à la liste</Text>
           </TouchableOpacity>
         </View>
@@ -322,54 +368,82 @@ const TicketDetails = () => {
           initialTicket={ticket}
         />
       )}
-    </>
+    </SafeAreaView>
   );
 };
 
 const styles = StyleSheet.create({
-  container: {
+  safeArea: {
     flex: 1,
     backgroundColor: '#f5f5f5',
-    padding: 15,
+  },
+  container: {
+    flex: 1,
+  },
+  scrollContent: {
+    flexGrow: 1,
+    padding: 16,
+    paddingBottom: 30, // Extra space en bas
   },
   centerContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    padding: 20,
-    backgroundColor: '#f5f5f5',
+    padding: 24,
   },
   emptyText: {
     fontSize: 16,
-    color: '#666',
+    color: '#64748b',
     textAlign: 'center',
+    marginTop: 16,
+    marginBottom: 24,
+    lineHeight: 22,
   },
   loadingText: {
-    fontSize: 16,
-    color: '#666',
-    marginTop: 10,
+    fontSize: 15,
+    color: '#64748b',
+    marginTop: 12,
   },
-  headerCard: {
+  backToListButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
     backgroundColor: 'white',
+    paddingHorizontal: 20,
+    paddingVertical: 12,
     borderRadius: 12,
-    padding: 20,
-    marginBottom: 15,
+    gap: 8,
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
-    shadowRadius: 3,
+    shadowRadius: 4,
     elevation: 3,
+  },
+  backToListText: {
+    fontSize: 15,
+    color: '#2196F3',
+    fontWeight: '600',
+  },
+  headerCard: {
+    backgroundColor: 'white',
+    borderRadius: 16,
+    padding: 20,
+    marginBottom: 16,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    elevation: 4,
   },
   headerTop: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'flex-start',
-    gap: 15,
+    gap: 16,
   },
   headerTitle: {
     fontSize: 20,
     fontWeight: 'bold',
-    color: '#333',
+    color: '#1e293b',
     flex: 1,
     lineHeight: 26,
   },
@@ -379,6 +453,7 @@ const styles = StyleSheet.create({
     borderRadius: 15,
     minWidth: 70,
     alignItems: 'center',
+    alignSelf: 'flex-start',
   },
   statusText: {
     fontSize: 13,
@@ -387,24 +462,29 @@ const styles = StyleSheet.create({
   },
   detailsCard: {
     backgroundColor: 'white',
-    borderRadius: 12,
+    borderRadius: 16,
     padding: 20,
-    marginBottom: 15,
+    marginBottom: 16,
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
-    shadowRadius: 3,
-    elevation: 3,
+    shadowRadius: 8,
+    elevation: 4,
+  },
+  cardHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 16,
+    gap: 8,
   },
   sectionTitle: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#333',
-    marginBottom: 15,
+    color: '#1e293b',
   },
   description: {
     fontSize: 15,
-    color: '#555',
+    color: '#475569',
     lineHeight: 22,
     marginBottom: 20,
   },
@@ -417,13 +497,14 @@ const styles = StyleSheet.create({
   },
   infoLabel: {
     fontSize: 13,
-    color: '#666',
+    color: '#64748b',
     marginBottom: 6,
+    fontWeight: '500',
   },
   infoValue: {
     fontSize: 14,
-    fontWeight: '500',
-    color: '#333',
+    fontWeight: '600',
+    color: '#1e293b',
   },
   priorityChip: {
     paddingHorizontal: 10,
@@ -433,64 +514,77 @@ const styles = StyleSheet.create({
   },
   metaCard: {
     backgroundColor: 'white',
-    borderRadius: 12,
+    borderRadius: 16,
     padding: 20,
-    marginBottom: 15,
+    marginBottom: 16,
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
-    shadowRadius: 3,
-    elevation: 3,
+    shadowRadius: 8,
+    elevation: 4,
   },
   metaItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: 8,
-    gap: 10,
+    paddingVertical: 10,
+    gap: 12,
   },
   metaLabel: {
     fontSize: 14,
-    color: '#666',
+    color: '#64748b',
     width: 80,
+    fontWeight: '500',
   },
   metaValue: {
     fontSize: 14,
-    color: '#333',
-    fontWeight: '500',
+    color: '#1e293b',
+    fontWeight: '600',
     flex: 1,
   },
   actionsCard: {
     backgroundColor: 'white',
-    borderRadius: 12,
+    borderRadius: 16,
     padding: 20,
     marginBottom: 20,
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
-    shadowRadius: 3,
-    elevation: 3,
+    shadowRadius: 8,
+    elevation: 4,
   },
   actionsGrid: {
     flexDirection: 'row',
-    gap: 10,
-    marginBottom: 10,
+    gap: 12,
+    marginBottom: 12,
   },
   actionButton: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    padding: 12,
-    borderRadius: 8,
-    marginBottom: 10,
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    borderRadius: 12,
+    marginBottom: 12,
     gap: 6,
+    minHeight: 44, // Touch target optimisé
   },
   editButton: {
     backgroundColor: '#2196F3',
     flex: 1,
+    shadowColor: "#2196F3",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 4,
+    elevation: 3,
   },
   deleteButton: {
     backgroundColor: '#f44336',
     flex: 1,
+    shadowColor: "#f44336",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 4,
+    elevation: 3,
   },
   commentButton: {
     backgroundColor: '#4CAF50',
@@ -504,7 +598,7 @@ const styles = StyleSheet.create({
   backButton: {
     backgroundColor: 'transparent',
     borderWidth: 1.5,
-    borderColor: '#e0e0e0',
+    borderColor: '#e2e8f0',
   },
   actionButtonText: {
     color: 'white',
@@ -512,10 +606,9 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   backButtonText: {
-    color: '#666',
+    color: '#64748b',
     fontSize: 14,
     fontWeight: '600',
   },
 });
-
 export default TicketDetails;

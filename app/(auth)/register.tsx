@@ -52,10 +52,13 @@ export default function Register() {
     <KeyboardAvoidingView 
       style={styles.container}
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 20}
     >
       <ScrollView 
         contentContainerStyle={styles.scrollContainer}
+        showsVerticalScrollIndicator={false}
         keyboardShouldPersistTaps="handled"
+        bounces={false}
       >
         <View style={styles.formContainer}>
           <Text style={styles.title}>Inscription</Text>
@@ -69,6 +72,7 @@ export default function Register() {
               mode="outlined"
               keyboardType="email-address"
               autoCapitalize="none"
+              autoComplete="email"
               style={styles.input}
               theme={{
                 colors: {
@@ -86,6 +90,7 @@ export default function Register() {
               onChangeText={setName}
               mode="outlined"
               autoCapitalize="none"
+              autoComplete="username"
               style={styles.input}
               theme={{
                 colors: {
@@ -105,6 +110,7 @@ export default function Register() {
                 mode="outlined"
                 secureTextEntry={secureText}
                 autoCapitalize="none"
+                autoComplete="password"
                 style={styles.passwordInput}
                 theme={{
                   colors: {
@@ -116,11 +122,12 @@ export default function Register() {
               <TouchableOpacity 
                 style={styles.eyeIcon}
                 onPress={() => setSecureText(!secureText)}
+                activeOpacity={0.7}
               >
                 {secureText ? (
-                  <EyeOff size={24} color="#666" />
+                  <EyeOff size={20} color="#666" />
                 ) : (
-                  <Eye size={24} color="#666" />
+                  <Eye size={20} color="#666" />
                 )}
               </TouchableOpacity>
             </View>
@@ -131,6 +138,7 @@ export default function Register() {
               style={[styles.button, styles.primaryButton]}
               onPress={handleRegister}
               disabled={loading}
+              activeOpacity={0.8}
             >
               {loading ? (
                 <ActivityIndicator size="small" color="white" />
@@ -143,6 +151,7 @@ export default function Register() {
               style={[styles.button, styles.secondaryButton]}
               onPress={GoToLogin}
               disabled={loading}
+              activeOpacity={0.8}
             >
               <Text style={styles.secondaryButtonText}>
                 Déjà un compte ? Connectez-vous
@@ -164,32 +173,35 @@ const styles = StyleSheet.create({
     flexGrow: 1,
     justifyContent: "center",
     padding: 20,
+    paddingBottom: 40, // Extra space en bas
   },
   formContainer: {
     backgroundColor: "white",
-    borderRadius: 15,
-    padding: 25,
+    borderRadius: 16,
+    padding: 24,
+    marginVertical: 20, // Marge verticale pour breathing room
     shadowColor: "#000",
     shadowOffset: {
       width: 0,
       height: 2
     },
-    shadowOpacity: 0.25,
-    shadowRadius: 4,
-    elevation: 5,
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    elevation: 4,
   },
   title: {
-    fontSize: 24,
+    fontSize: 26,
     fontWeight: "bold",
     textAlign: "center",
     marginBottom: 8,
-    color: "#333",
+    color: "#1e293b",
   },
   subtitle: {
-    fontSize: 16,
+    fontSize: 15,
     textAlign: "center",
-    marginBottom: 30,
-    color: "#666",
+    marginBottom: 32,
+    color: "#64748b",
+    lineHeight: 20,
   },
   inputContainer: {
     marginBottom: 20,
@@ -198,10 +210,11 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: "600",
     marginBottom: 8,
-    color: "#333",
+    color: "#374151",
   },
   input: {
     backgroundColor: "#fff",
+    fontSize: 15,
   },
   passwordContainer: {
     position: 'relative',
@@ -209,41 +222,51 @@ const styles = StyleSheet.create({
   passwordInput: {
     backgroundColor: "#fff",
     paddingRight: 50,
+    fontSize: 15,
   },
   eyeIcon: {
     position: 'absolute',
-    right: 15,
-    top: 15,
-    padding: 5,
+    right: 12,
+    top: 16,
+    padding: 8,
     zIndex: 1,
   },
   buttonContainer: {
-    marginTop: 10,
-    gap: 15,
+    marginTop: 24,
+    gap: 16,
   },
   button: {
-    borderRadius: 8,
-    padding: 15,
+    borderRadius: 12,
+    paddingVertical: 16,
+    paddingHorizontal: 24,
     alignItems: "center",
     justifyContent: "center",
-    minHeight: 50,
+    minHeight: 48, // Minimum touch target
   },
   primaryButton: {
     backgroundColor: "#2196F3",
+    shadowColor: "#2196F3",
+    shadowOffset: {
+      width: 0,
+      height: 2
+    },
+    shadowOpacity: 0.3,
+    shadowRadius: 4,
+    elevation: 3,
   },
   secondaryButton: {
     backgroundColor: "transparent",
-    borderWidth: 2,
+    borderWidth: 1.5,
     borderColor: "#2196F3",
   },
   buttonText: {
     color: "white",
-    fontWeight: "bold",
+    fontWeight: "600",
     fontSize: 16,
   },
   secondaryButtonText: {
     color: "#2196F3",
-    fontWeight: "bold",
-    fontSize: 14,
+    fontWeight: "600",
+    fontSize: 15,
   },
 });

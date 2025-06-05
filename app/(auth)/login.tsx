@@ -1,6 +1,15 @@
 import React, { useState } from "react";
-import { View, StyleSheet, Alert, TouchableOpacity, Text } from "react-native";
-import { TextInput, IconButton } from "react-native-paper";
+import { 
+  View, 
+  StyleSheet, 
+  Alert, 
+  TouchableOpacity, 
+  Text, 
+  ScrollView,
+  KeyboardAvoidingView,
+  Platform 
+} from "react-native";
+import { TextInput } from "react-native-paper";
 import { sendEmailVerification, signInWithEmailAndPassword } from "firebase/auth";
 import { auth, db } from "@/config/firebase";
 import { Link, useRouter } from "expo-router";
@@ -42,39 +51,27 @@ const LoginScreen = () => {
   };
 
   return (
-    <View style={styles.container}>
-      <View style={styles.formContainer}>
-        <Text style={styles.title}>Connexion</Text>
-        <Text style={styles.subtitle}>Connectez-vous à votre compte</Text>
+    <KeyboardAvoidingView 
+      style={styles.container}
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+    >
+      <ScrollView 
+        contentContainerStyle={styles.scrollContent}
+        keyboardShouldPersistTaps="handled"
+      >
+        <View style={styles.formContainer}>
+          <Text style={styles.title}>Connexion</Text>
+          <Text style={styles.subtitle}>Connectez-vous à votre compte</Text>
 
-        <View style={styles.inputContainer}>
-          <Text style={styles.fieldLabel}>Adresse e-mail</Text>
-          <TextInput
-            value={email}
-            onChangeText={setEmail}
-            mode="outlined"
-            keyboardType="email-address"
-            autoCapitalize="none"
-            style={styles.input}
-            theme={{
-              colors: {
-                primary: '#2196F3',
-                outline: '#ddd',
-              }
-            }}
-          />
-        </View>
-
-        <View style={styles.inputContainer}>
-          <Text style={styles.fieldLabel}>Mot de passe</Text>
-          <View style={styles.passwordContainer}>
+          <View style={styles.inputContainer}>
+            <Text style={styles.fieldLabel}>Adresse e-mail</Text>
             <TextInput
-              value={password}
-              onChangeText={setPassword}
+              value={email}
+              onChangeText={setEmail}
               mode="outlined"
-              secureTextEntry={secureText}
+              keyboardType="email-address"
               autoCapitalize="none"
-              style={styles.passwordInput}
+              style={styles.input}
               theme={{
                 colors: {
                   primary: '#2196F3',
@@ -82,49 +79,72 @@ const LoginScreen = () => {
                 }
               }}
             />
+          </View>
+
+          <View style={styles.inputContainer}>
+            <Text style={styles.fieldLabel}>Mot de passe</Text>
+            <View style={styles.passwordContainer}>
+              <TextInput
+                value={password}
+                onChangeText={setPassword}
+                mode="outlined"
+                secureTextEntry={secureText}
+                autoCapitalize="none"
+                style={styles.passwordInput}
+                theme={{
+                  colors: {
+                    primary: '#2196F3',
+                    outline: '#ddd',
+                  }
+                }}
+              />
+              <TouchableOpacity
+                style={styles.eyeIcon}
+                onPress={() => setSecureText(!secureText)}
+              >
+                {secureText ? (
+                  <EyeOff size={20} color="#666" />
+                ) : (
+                  <Eye size={20} color="#666" />
+                )}
+              </TouchableOpacity>
+            </View>
+          </View>
+
+          <View style={styles.buttonContainer}>
             <TouchableOpacity
-              style={styles.eyeIcon}
-              onPress={() => setSecureText(!secureText)}
+              style={[styles.button, styles.primaryButton]}
+              onPress={handleLogin}
+              disabled={loading}
             >
-              {secureText ? (
-                <EyeOff size={24} color="#666" />
-              ) : (
-                <Eye size={24} color="#666" />
-              )}
+              <Text style={styles.buttonText}>
+                {loading ? "Connexion..." : "Se connecter"}
+              </Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={[styles.button, styles.secondaryButton]}
+              onPress={goToRegister}
+              disabled={loading}
+            >
+              <Text style={styles.secondaryButtonText}>Inscription</Text>
             </TouchableOpacity>
           </View>
         </View>
-
-        <View style={styles.buttonContainer}>
-          <TouchableOpacity
-            style={[styles.button, styles.primaryButton]}
-            onPress={handleLogin}
-            disabled={loading}
-          >
-            <Text style={styles.buttonText}>
-              {loading ? "Connexion..." : "Se connecter"}
-            </Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            style={[styles.button, styles.secondaryButton]}
-            onPress={goToRegister}
-            disabled={loading}
-          >
-            <Text style={styles.secondaryButtonText}>Inscription</Text>
-          </TouchableOpacity>
-        </View>
-      </View>
-    </View>
+      </ScrollView>
+    </KeyboardAvoidingView>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: "#f5f5f5",
+  },
+  scrollContent: {
+    flexGrow: 1,
     justifyContent: "center",
     padding: 20,
-    backgroundColor: "#f5f5f5",
   },
   formContainer: {
     backgroundColor: "white",
@@ -173,9 +193,9 @@ const styles = StyleSheet.create({
   },
   eyeIcon: {
     position: 'absolute',
-    right: 15,
-    top: 15,
-    padding: 5,
+    right: 12,
+    top: 16,
+    padding: 8,
     zIndex: 1,
   },
   buttonContainer: {
